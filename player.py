@@ -22,7 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = [pos_x, pos_y]
 
-        self.accel = 0.25
+        self.accel = 0.5
         self.fall_accel = 1
         self.max_speed = 5
         self.max_fall_speed = 15
@@ -67,10 +67,10 @@ class Player(pygame.sprite.Sprite):
 
     def friction(self):
         '''Hamowanie gracza'''
-        if abs(self.change_x) < 0.5:
-            self.change_x = 0
-        else:
-            self.change_x *= 0.9
+        if self.change_x > 0:
+            self.change_x -= self.accel/2
+        elif self.change_x < 0:
+            self.change_x += self.accel/2
 
     def is_falling(self):
         '''Czy gracz spada - return True/False'''

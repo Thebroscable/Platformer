@@ -27,6 +27,7 @@ while True:
             pygame.quit()
             sys.exit()
 
+    # nasłuchiwanie przycisków
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] is True:
         player.jump()
@@ -41,7 +42,10 @@ while True:
     player.rect.left += player.change_x
     player.rect.top += player.change_y
 
-    #player.friction()
+    # hamowanie gracza
+    player.friction()
+
+    # zmiana stanu, obrazu, rotacji
     player.change_state()
     player.change_sprite()
     player.change_direction()
