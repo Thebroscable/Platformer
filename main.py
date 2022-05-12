@@ -42,6 +42,7 @@ while True:
     player.rect.top += player.change_y
 
     #player.friction()
+    player.change_state()
     player.change_sprite()
     player.change_direction()
 

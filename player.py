@@ -81,10 +81,21 @@ class Player(pygame.sprite.Sprite):
 
     def change_sprite(self):
         self.current_sprite += self.frame_speed + abs(self.change_x)*(self.frame_speed/self.max_speed)
-        list_len = len(self.sprites['herochar_idle_anim_strip_4'])
+        list_len = len(self.sprites[self.state])
         list_index = int(self.current_sprite)
-        self.image = self.sprites['herochar_idle_anim_strip_4'][list_index%list_len]
+        self.image = self.sprites[self.state][list_index%list_len]
 
     def change_direction(self):
         if self.direction == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
+    
+    def change_state(self):
+        prev_state = self.state
+
+        if self.change_x == 0:
+            self.state = 'herochar_idle_anim_strip_4'
+        else:
+            self.state = 'herochar_run_anim_strip_6'
+
+        if prev_state != self.state:
+            self.current_sprite = 0
