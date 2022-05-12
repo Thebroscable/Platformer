@@ -89,10 +89,10 @@ class Player(pygame.sprite.Sprite):
         if self.direction == 'left':
             self.image = pygame.transform.flip(self.image, True, False)
     
-    def change_state(self):
+    def change_state(self, keys):
         prev_state = self.state
 
-        if self.change_x == 0:
+        if self.change_x == 0 and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
             self.state = 'herochar_idle_anim_strip_4'
         else:
             self.state = 'herochar_run_anim_strip_6'

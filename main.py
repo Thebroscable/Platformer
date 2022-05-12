@@ -37,6 +37,8 @@ while True:
         player.move_left()
     if keys[pygame.K_RIGHT] is True:
         player.move_right()
+    if keys[pygame.K_SPACE] is True:
+        pass
 
     # aktualizacja gracza
     player.rect.left += player.change_x
@@ -46,7 +48,7 @@ while True:
     player.friction()
 
     # zmiana stanu, obrazu, rotacji
-    player.change_state()
+    player.change_state(keys)
     player.change_sprite()
     player.change_direction()
 
