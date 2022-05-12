@@ -43,6 +43,7 @@ while True:
 
     #player.friction()
     player.change_sprite()
+    player.change_direction()
 
     # rysowanie    
     window.fill((0, 100, 255))

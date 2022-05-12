@@ -84,3 +84,7 @@ class Player(pygame.sprite.Sprite):
         list_len = len(self.sprites['herochar_idle_anim_strip_4'])
         list_index = int(self.current_sprite)
         self.image = self.sprites['herochar_idle_anim_strip_4'][list_index%list_len]
+
+    def change_direction(self):
+        if self.direction == 'left':
+            self.image = pygame.transform.flip(self.image, True, False)
