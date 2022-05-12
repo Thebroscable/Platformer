@@ -1,5 +1,4 @@
 import csv
-from numpy import tile
 import pygame
 import os
 from settings import *

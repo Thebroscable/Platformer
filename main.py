@@ -41,7 +41,8 @@ while True:
     player.rect.left += player.change_x
     player.rect.top += player.change_y
 
-    player.friction()
+    #player.friction()
+    player.change_sprite()
 
     # rysowanie    
     window.fill((0, 100, 255))

@@ -2,7 +2,7 @@
 # ustawienia
 tile_size = 16
 resize_multi = 3
-screen_size = (tile_size*16*2, tile_size*9*2)
+screen_size = (tile_size*resize_multi*16, tile_size*resize_multi*9)
 
 # path
 paths = {

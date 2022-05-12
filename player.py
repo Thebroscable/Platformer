@@ -17,6 +17,7 @@ class Player(pygame.sprite.Sprite):
                 self.sprites[key][i] = image_resize(img, resize_multi)
 
         self.current_sprite = 0
+        self.frame_speed = 0.1
         self.image = self.sprites['herochar_idle_anim_strip_4'][self.current_sprite]
         self.rect = self.image.get_rect()
         self.rect.topleft = [pos_x, pos_y]
@@ -71,17 +72,15 @@ class Player(pygame.sprite.Sprite):
         else:
             self.change_x *= 0.9
 
-    def is_grounded(self):
-        '''Czy gracz dotyka ziemi - return True/False'''
-        if self.rect.top >= (screen_size[1] - tile_size * 3):
-            self.rect.top = (screen_size[1] - tile_size * 3)
-            return True
-        else:
-            return False
-
     def is_falling(self):
         '''Czy gracz spada - return True/False'''
         if self.change_y > 0:
             return True
         else:
             return False
+
+    def change_sprite(self):
+        self.current_sprite += self.frame_speed + abs(self.change_x)*(self.frame_speed/self.max_speed)
+        list_len = len(self.sprites['herochar_idle_anim_strip_4'])
+        list_index = int(self.current_sprite)
+        self.image = self.sprites['herochar_idle_anim_strip_4'][list_index%list_len]
