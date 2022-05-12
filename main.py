@@ -29,7 +29,7 @@ while True:
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] is True:
-        player.move_up()
+        player.jump()
     if keys[pygame.K_DOWN] is True:
         pass
     if keys[pygame.K_LEFT] is True:
@@ -37,14 +37,15 @@ while True:
     if keys[pygame.K_RIGHT] is True:
         player.move_right()
 
-    # aktualizacja klas
-    player.update()
+    # aktualizacja gracza
+    player.rect.left += player.change_x
+    player.rect.top += player.change_y
+
+    player.friction()
 
     # rysowanie    
     window.fill((0, 100, 255))
-
     sprite_group.draw(window)
-    level.draw()
 
     pygame.display.flip()
     clock.tick(60)

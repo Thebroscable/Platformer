@@ -1,6 +1,6 @@
 import pygame
 from settings import *
-from support import resize
+from support import *
 
 
 class Player(pygame.sprite.Sprite):
@@ -8,49 +8,63 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         pos_x = tile_size
-        pos_y = screen_size[1] - tile_size * 2
+        pos_y = screen_size[1] - tile_size * 8
 
-        self.sprites = self.load_sprites()
+        images = dict(image_loader(paths['hero']))
+        self.sprites = image_separator(images)
+        for key in self.sprites:
+            for i, img in enumerate(self.sprites[key]):
+                self.sprites[key][i] = image_resize(img, resize_multi)
+
         self.current_sprite = 0
-        self.image = self.sprites[0][0][self.current_sprite]
+        self.image = self.sprites['herochar_idle_anim_strip_4'][self.current_sprite]
         self.rect = self.image.get_rect()
         self.rect.topleft = [pos_x, pos_y]
 
         self.accel = 0.25
         self.fall_accel = 1
-        self.change_x = 0
-        self.change_y = 0
         self.max_speed = 5
         self.max_fall_speed = 15
+        self.change_x = 0
+        self.change_y = 0
+        self.jump_speed = 15
+        self.jump_accel = 0.5
         self.jump_count = 1
         self.direction = 'right'
-        self.status = 'idle'
+        self.state = 'idle'
 
     def move_right(self):
         '''Ruch w prawo gracza'''
-        if self.change_x < self.max_speed:
+        if self.change_x + self.accel < self.max_speed:
             self.change_x += self.accel
+        else:
+            self.change_x = self.max_speed
         self.direction = 'right'
-        self.status = 'run'
 
     def move_left(self):
         '''Ruch w lewo gracza'''
-        if abs(self.change_x) < self.max_speed:
+        if self.change_x - self.accel > -self.max_speed:
             self.change_x -= self.accel
+        else:
+            self.change_x = -self.max_speed
         self.direction = 'left'
-        self.status = 'run'
 
-    def move_up(self):
+    def jump(self):
         '''Skok gracza'''
-        if self.is_grounded() and self.jump_count:
-            self.change_y -= 15
-            self.status = 'jump'
+        if self.jump_count:
+            self.change_y -= self.jump_speed
             self.jump_count -= 1
-        if not self.is_grounded() and not self.is_falling():
-            self.change_y -= 0.5
-            self.status = 'jump'
+        if not self.jump_count and not self.is_falling():
+            self.change_y -= self.jump_accel
 
-    def idle(self):
+    def fall(self):
+        '''spadek gracza'''
+        if self.change_y + self.fall_accel < self.max_fall_speed:
+            self.change_y += self.fall_accel
+        else:
+            self.change_y = self.max_fall_speed
+
+    def friction(self):
         '''Hamowanie gracza'''
         if abs(self.change_x) < 0.5:
             self.change_x = 0
@@ -71,63 +85,3 @@ class Player(pygame.sprite.Sprite):
             return True
         else:
             return False
-
-    def gravity(self):
-        '''Działanie grawitacji'''
-        if not self.is_grounded():
-            if self.change_y < self.max_fall_speed:
-                self.change_y += self.fall_accel
-        else:
-            self.change_y = 0
-
-    def manage_sprites(self, increment, index1, index2):
-        self.current_sprite += increment
-        if self.current_sprite >= len(self.sprites[index1][index2]):
-            self.current_sprite = 0
-        if self.direction == 'left':
-            self.image = pygame.transform.flip(self.sprites[index1][index2][int(self.current_sprite)], True, False)
-        else:
-            self.image = self.sprites[index1][index2][int(self.current_sprite)]
-
-    def update(self):
-        '''Aktualizacja stanu gracza'''
-        self.rect.top += self.change_y
-        self.rect.left += self.change_x
-
-        if self.is_grounded():
-            self.jump_count = 1
-
-        self.gravity()
-        self.update_sprites()
-
-        if self.status == 'idle':
-            self.idle()
-        self.status = 'idle'
-
-    def update_sprites(self):
-        if self.status == 'idle':
-            self.manage_sprites(0.1, 0, 0)
-        elif self.status == 'run':
-            self.manage_sprites(0.2, 0, 1)
-
-    def load_sprites(self):
-        idle = [
-            resize(player_sprites["without_sword"]["idle_1"]),
-            resize(player_sprites["without_sword"]["idle_2"]),
-            resize(player_sprites["without_sword"]["idle_3"]),
-            resize(player_sprites["without_sword"]["idle_4"]),
-            resize(player_sprites["without_sword"]["idle_5"])
-        ]
-
-        run = [
-            resize(player_sprites["without_sword"]["run_1"]),
-            resize(player_sprites["without_sword"]["run_2"]),
-            resize(player_sprites["without_sword"]["run_3"]),
-            resize(player_sprites["without_sword"]["run_4"]),
-            resize(player_sprites["without_sword"]["run_5"]),
-            resize(player_sprites["without_sword"]["run_5"])
-        ]
-
-        without_sword = [idle, run]
-
-        return [without_sword]
