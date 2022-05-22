@@ -3,6 +3,7 @@ import pygame
 from player import Player
 from level import Level
 from settings import *
+from game_data import level_0
 
 # inicjalizacja
 pygame.init()
@@ -14,7 +15,7 @@ clock = pygame.time.Clock()
 
 # deklaracja klas
 player = Player()
-level = Level(window)
+level = Level(level_0, window)
 
 # sprites
 sprite_group = pygame.sprite.Group()
@@ -26,8 +27,8 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+    window.fill('grey')
 
-    # nasłuchiwanie przycisków
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] is True:
         player.jump()
@@ -37,23 +38,15 @@ while True:
         player.move_left()
     if keys[pygame.K_RIGHT] is True:
         player.move_right()
-    if keys[pygame.K_SPACE] is True:
-        pass
 
     # aktualizacja gracza
     player.rect.left += player.change_x
     player.rect.top += player.change_y
 
-    # hamowanie gracza
-    player.friction()
-
-    # zmiana stanu, obrazu, rotacji
-    player.change_state(keys)
+    #player.friction()
     player.change_sprite()
-    player.change_direction()
 
-    # rysowanie    
-    window.fill((0, 100, 255))
+    # rysowanie
     sprite_group.draw(window)
 
     pygame.display.flip()
