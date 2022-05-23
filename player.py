@@ -32,7 +32,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_accel = 0.5
         self.jump_count = 1
         self.direction = 'right'
-        self.state = 'idle'
+        self.state = 'herochar_idle_anim_strip_4'
 
     def move_right(self):
         '''Ruch w prawo gracza'''

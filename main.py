@@ -27,7 +27,6 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-    window.fill('grey')
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] is True:
@@ -38,15 +37,23 @@ while True:
         player.move_left()
     if keys[pygame.K_RIGHT] is True:
         player.move_right()
+    if keys[pygame.K_SPACE] is True:
+        pass
 
     # aktualizacja gracza
     player.rect.left += player.change_x
     player.rect.top += player.change_y
 
-    #player.friction()
+    # hamowanie gracza
+    player.friction()
+
+    # zmiana stanu, obrazu, rotacji
+    player.change_state(keys)
     player.change_sprite()
+    player.change_direction()
 
     # rysowanie
+    window.fill('grey')
     sprite_group.draw(window)
 
     pygame.display.flip()
