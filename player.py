@@ -63,12 +63,24 @@ class Player(pygame.sprite.Sprite):
             self.state = 'herochar_attack_anim_strip_4'
             self.current_sprite = 0
 
-    def fall(self):
+    def is_on_ground(self):
+        if self.rect.top >= screen_size[1] - (tile_size*resize_multi):
+            return True
+        else:
+            return False
+
+    def gravity(self):
         '''spadek gracza'''
         if self.change_y + self.fall_accel < self.max_fall_speed:
             self.change_y += self.fall_accel
         else:
             self.change_y = self.max_fall_speed
+
+    def hit_ground(self):
+        if self.rect.top >= screen_size[1] - (tile_size*resize_multi):
+            self.rect.top = screen_size[1] - (tile_size*resize_multi)
+            self.change_y = 0
+            self.jump_count = 1
 
     def friction(self):
         '''Hamowanie gracza'''

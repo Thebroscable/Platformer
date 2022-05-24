@@ -47,6 +47,10 @@ while True:
 
     # hamowanie gracza
     player.friction()
+    if not player.is_on_ground():
+        player.gravity()
+    else:
+        player.hit_ground()
 
     # zmiana stanu, obrazu, rotacji
     player.change_state(keys)
