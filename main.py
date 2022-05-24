@@ -20,6 +20,7 @@ level = Level(level_0, window)
 # sprites
 sprite_group = pygame.sprite.Group()
 sprite_group.add(player)
+#sprite_group.add(level)
 
 # pętla gry
 while True:
@@ -38,7 +39,7 @@ while True:
     if keys[pygame.K_RIGHT] is True:
         player.move_right()
     if keys[pygame.K_SPACE] is True:
-        pass
+        player.attack()
 
     # aktualizacja gracza
     player.rect.left += player.change_x
@@ -53,7 +54,7 @@ while True:
     player.change_direction()
 
     # rysowanie
-    window.fill('grey')
+    window.fill('black')
     sprite_group.draw(window)
 
     pygame.display.flip()

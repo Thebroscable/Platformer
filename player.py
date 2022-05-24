@@ -58,6 +58,11 @@ class Player(pygame.sprite.Sprite):
         if not self.jump_count and not self.is_falling():
             self.change_y -= self.jump_accel
 
+    def attack(self):
+        if self.state != 'herochar_attack_anim_strip_4':
+            self.state = 'herochar_attack_anim_strip_4'
+            self.current_sprite = 0
+
     def fall(self):
         '''spadek gracza'''
         if self.change_y + self.fall_accel < self.max_fall_speed:
@@ -91,11 +96,12 @@ class Player(pygame.sprite.Sprite):
 
     def change_state(self, keys):
         prev_state = self.state
-
-        if self.change_x == 0 and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
-            self.state = 'herochar_idle_anim_strip_4'
-        else:
-            self.state = 'herochar_run_anim_strip_6'
+        
+        if self.state != 'herochar_attack_anim_strip_4' or self.current_sprite > 4:
+            if self.change_x == 0 and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
+                self.state = 'herochar_idle_anim_strip_4'
+            else:
+                self.state = 'herochar_run_anim_strip_6'
 
         if prev_state != self.state:
             self.current_sprite = 0

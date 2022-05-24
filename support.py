@@ -45,3 +45,4 @@ def image_separator(dict):
             temp.append(dict[key].subsurface(j * tile_size, 0, tile_size, tile_size))
         dict[key] = temp
     return dict
+
