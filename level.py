@@ -191,10 +191,10 @@ class Level:
         player_x = player.rect.centerx
         direction_x = player.direction.x
 
-        if player_x < screen_size[0] / 3 and direction_x < 0:
+        if player_x < screen_size[0] / 2 and direction_x < 0:
             self.world_shift = 4
             player.speed = 0
-        elif player_x > screen_size[0] - (screen_size[0] / 3) and direction_x > 0:
+        elif player_x > screen_size[0] - (screen_size[0] / 2) and direction_x > 0:
             self.world_shift = -4
             player.speed = 0
         else:
@@ -277,7 +277,7 @@ class Level:
     def enemy_player_collision(self):
         if self.player.sprite.invincibility > 0:
             return
-        for enemy in self.enemies_sprites.sprites() + self.traps_spike_sprites.sprites():
+        for enemy in self.enemies_sprites.sprites():
             if enemy.rect.colliderect(self.player.sprite.rect):
                 self.current_health = self.reduce_life()
                 self.player.sprite.status = 'hit'
@@ -285,6 +285,18 @@ class Level:
                 self.player.sprite.invincibility = 60
                 self.hit_sound.play()
                 break
+        if self.player.sprite.invincibility > 0:
+            return
+        for trap in self.traps_spike_sprites.sprites():
+            if pygame.sprite.collide_rect_ratio(0.85)(trap, self.player.sprite):
+                self.current_health = self.reduce_life()
+                self.player.sprite.status = 'hit'
+                self.player.sprite.frame_index = 0
+                self.player.sprite.invincibility = 60
+                self.hit_sound.play()
+                break
+        if self.player.sprite.invincibility > 0:
+            return
         for trap in self.traps_sprites.sprites():
             if pygame.sprite.collide_rect_ratio(1.05)(trap, self.player.sprite):
                 self.current_health = self.reduce_life()

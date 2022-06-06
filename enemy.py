@@ -33,7 +33,8 @@ class Slime(Enemy):
 class Goblin(Enemy):
     def __init__(self, pos, size):
         path = 'data/sprites/enemies/goblin/goblin_run.png'
-        super().__init__(pos, size, path)
+        super().__init__(pos, size, path, (16, 16))
+        self.speed = 5
 
 
 class Worm(Enemy):
@@ -46,4 +47,5 @@ class Worm(Enemy):
 class Mushroom(Enemy):
     def __init__(self, pos, size):
         path = 'data/sprites/enemies/mushroom/mushroom_walk.png'
-        super().__init__(pos, size, path)
+        super().__init__(pos, size, path, (16, 16))
+        self.speed = 4

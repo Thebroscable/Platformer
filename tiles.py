@@ -20,7 +20,7 @@ class StaticTile(Tile):
 
 
 class AnimatedTile(Tile):
-    def __init__(self, pos, size, path, real_size=(tile_size, tile_size)):
+    def __init__(self, pos, size, path, real_size=(16, 16)):
         super().__init__(pos, size)
         self.frames = import_cut_graphics(path, real_size)
         self.frame_index = 0
@@ -44,7 +44,7 @@ class Trap(StaticTile):
 
     def update(self, player, shift=0):
         super().update(shift)
-        if self.rect.x <= player.sprite.rect.x <= self.rect.x+tile_size:
+        if self.rect.x <= player.sprite.rect.x <= self.rect.x+tile_size and player.sprite.rect.y > self.rect.y:
             self.activate = True
         if self.activate:
             self.rect.y += 6
