@@ -10,7 +10,7 @@ from particles import ParticleEffect
 class Game:
     def __init__(self):
         # game data
-        self.max_level = 0
+        self.max_level = self.load_data()
 
         # overworld
         self.overworld = Overworld(0, self.max_level, window, self.create_level)
@@ -21,6 +21,23 @@ class Game:
         self.current_health = 3
         self.coins = 0
         self.heart_loss_sprites = pygame.sprite.Group()
+
+    def load_data(self):
+        try:
+            file = open('data/game_data.txt', 'r')
+            max_level = int(file.read())
+            file.close()
+            return max_level
+        except:
+            file = open('data/game_data.txt', 'w')
+            file.write('0')
+            file.close()
+            return 0
+
+    def save_data(self):
+        file = open('data/game_data.txt', 'w')
+        file.write(str(self.max_level))
+        file.close()
 
     def create_level(self, current_level):
         self.level = Level(current_level, window, self.create_overworld, self.change_coins, self.reduce_life, self.create_level)
@@ -69,6 +86,7 @@ game = Game()
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            game.save_data()
             pygame.quit()
             sys.exit()
 

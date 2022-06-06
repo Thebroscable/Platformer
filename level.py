@@ -207,11 +207,11 @@ class Level:
 
         for sprite in self.terrain_sprites.sprites():
             if sprite.rect.colliderect(player.rect):
-                if player.direction.x < 0:
+                if player.direction.x < 0 and not player.on_right:
                     player.rect.left = sprite.rect.right
                     player.on_left = True
                     self.current_x = player.rect.left
-                elif player.direction.x > 0:
+                elif player.direction.x > 0 and not player.on_left:
                     player.rect.right = sprite.rect.left
                     player.on_right = True
                     self.current_x = player.rect.right
