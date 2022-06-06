@@ -1,119 +1,144 @@
 import pygame
-from settings import *
-from support import *
+from support import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, pos, create_jump_particles, create_attack_particles):
         super().__init__()
+        self.import_character_assets()
+        self.frame_index = 0
+        self.animation_speed = 0.10
+        self.image = self.animations['idle'][self.frame_index]
+        self.rect = self.image.get_rect(topleft=pos)
 
-        pos_x = tile_size
-        pos_y = screen_size[1] - tile_size * 8
+        # particles
+        self.create_jump_particles = create_jump_particles
+        self.create_attack_particles = create_attack_particles
 
-        images = dict(image_loader(paths['hero']))
-        self.sprites = image_separator(images)
-        for key in self.sprites:
-            for i, img in enumerate(self.sprites[key]):
-                self.sprites[key][i] = image_resize(img, resize_multi)
+        # movement
+        self.direction = pygame.math.Vector2(0, 0)
+        self.speed = 4
+        self.gravity = 0.8
+        self.jump_speed = -16
 
-        self.current_sprite = 0
-        self.frame_speed = 0.1
-        self.image = self.sprites['herochar_idle_anim_strip_4'][self.current_sprite]
-        self.rect = self.image.get_rect()
-        self.rect.topleft = [pos_x, pos_y]
+        # stats
+        self.attack_cooldown = 0
+        self.invincibility = 0
 
-        self.accel = 0.5
-        self.fall_accel = 1
-        self.max_speed = 5
-        self.max_fall_speed = 15
-        self.change_x = 0
-        self.change_y = 0
-        self.jump_speed = 15
-        self.jump_accel = 0.5
-        self.jump_count = 1
-        self.direction = 'right'
-        self.state = 'herochar_idle_anim_strip_4'
+        # state
+        self.status = 'idle'
+        self.facing_right = True
+        self.on_ground = False
+        self.on_ceiling = False
+        self.on_left = False
+        self.on_right = False
 
-    def move_right(self):
-        '''Ruch w prawo gracza'''
-        if self.change_x + self.accel < self.max_speed:
-            self.change_x += self.accel
+        # sound
+        self.sword_sound = pygame.mixer.Sound('data/sounds/sword.wav')
+        self.jump_sound = pygame.mixer.Sound('data/sounds/jump.wav')
+
+    def import_character_assets(self):
+        character_path = 'data/sprites/hero/'
+        self.animations = {'idle': [], 'run': [], 'jump': [],
+                           'fall': [], 'attack': [],
+                           'death': [], 'hit': []}
+
+        for animation in self.animations.keys():
+            full_path = character_path + animation
+            self.animations[animation] = import_folder(full_path)
+
+    def animate(self):
+        # wczytanie animacji
+        animation = self.animations[self.status]
+
+        # animowanie
+        if self.status == 'attack' or self.status == 'hit':
+            self.frame_index += 0.4
         else:
-            self.change_x = self.max_speed
-        self.direction = 'right'
+            self.frame_index += self.animation_speed
 
-    def move_left(self):
-        '''Ruch w lewo gracza'''
-        if self.change_x - self.accel > -self.max_speed:
-            self.change_x -= self.accel
+        if self.frame_index >= len(animation):
+            if self.status == 'attack' or self.status == 'hit':
+                self.status = 'idle'
+                animation = self.animations[self.status]
+            self.frame_index = 0
+
+        # zmiana kierunku
+        image = animation[int(self.frame_index)]
+        if self.facing_right:
+            self.image = image
         else:
-            self.change_x = -self.max_speed
-        self.direction = 'left'
+            flipped_image = pygame.transform.flip(image, True, False)
+            self.image = flipped_image
+
+        if self.on_ground and self.on_right:
+            self.rect = self.image.get_rect(bottomright=self.rect.bottomright)
+        elif self.on_ground and self.on_left:
+            self.rect = self.image.get_rect(bottomleft=self.rect.bottomleft)
+        elif self.on_ground:
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+        elif self.on_ceiling and self.on_right:
+            self.rect = self.image.get_rect(topright=self.rect.topright)
+        elif self.on_ceiling and self.on_left:
+            self.rect = self.image.get_rect(topleft=self.rect.topleft)
+        elif self.on_ceiling:
+            self.rect = self.image.get_rect(midtop=self.rect.midtop)
+
+    def get_input(self):
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_SPACE] and self.status != 'attack' and self.attack_cooldown <= 0:
+            self.create_attack_particles(self.rect.topleft)
+            self.status = 'attack'
+            self.attack_cooldown = 60
+            self.sword_sound.play()
+
+        if keys[pygame.K_UP] and self.on_ground and self.status != 'attack':
+            self.jump()
+            self.create_jump_particles(self.rect.midbottom)
+            self.jump_sound.play()
+
+        if keys[pygame.K_RIGHT] and self.status != 'attack':
+            self.direction.x = 1
+            self.facing_right = True
+        elif keys[pygame.K_LEFT] and self.status != 'attack':
+            self.direction.x = -1
+            self.facing_right = False
+        else:
+            self.direction.x = 0
+
+    def get_status(self):
+        prev_state = self.status
+
+        if self.status != 'attack' and self.status != 'hit':
+            if self.direction.y < 0:
+                self.status = 'jump'
+            elif self.direction.y > 1:
+                self.status = 'fall'
+            else:
+                if self.direction.x != 0:
+                    self.status = 'run'
+                else:
+                    self.status = 'idle'
+
+        if self.status != prev_state:
+            self.frame_index = 0
+
+    def apply_gravity(self):
+        self.direction.y += self.gravity
+        self.rect.y += self.direction.y
 
     def jump(self):
-        '''Skok gracza'''
-        if self.jump_count:
-            self.change_y -= self.jump_speed
-            self.jump_count -= 1
-        if not self.jump_count and not self.is_falling():
-            self.change_y -= self.jump_accel
+        self.direction.y = self.jump_speed
 
-    def attack(self):
-        if self.state != 'herochar_attack_anim_strip_4':
-            self.state = 'herochar_attack_anim_strip_4'
-            self.current_sprite = 0
+    def countdown(self):
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -= 1
+        if self.invincibility > 0:
+            self.invincibility -= 1
 
-    def is_on_ground(self):
-        if self.rect.top >= screen_size[1] - (tile_size*resize_multi):
-            return True
-        else:
-            return False
-
-    def gravity(self):
-        '''spadek gracza'''
-        if self.change_y + self.fall_accel < self.max_fall_speed:
-            self.change_y += self.fall_accel
-        else:
-            self.change_y = self.max_fall_speed
-
-    def hit_ground(self):
-        if self.rect.top >= screen_size[1] - (tile_size*resize_multi):
-            self.rect.top = screen_size[1] - (tile_size*resize_multi)
-            self.change_y = 0
-            self.jump_count = 1
-
-    def friction(self):
-        '''Hamowanie gracza'''
-        if self.change_x > 0:
-            self.change_x -= self.accel / 2
-        elif self.change_x < 0:
-            self.change_x += self.accel / 2
-
-    def is_falling(self):
-        '''Czy gracz spada - return True/False'''
-        if self.change_y > 0:
-            return True
-        else:
-            return False
-
-    def change_sprite(self):
-        self.current_sprite += self.frame_speed + abs(self.change_x) * (self.frame_speed / self.max_speed)
-        list_len = len(self.sprites[self.state])
-        list_index = int(self.current_sprite)
-        self.image = self.sprites[self.state][list_index % list_len]
-
-    def change_direction(self):
-        if self.direction == 'left':
-            self.image = pygame.transform.flip(self.image, True, False)
-
-    def change_state(self, keys):
-        prev_state = self.state
-        
-        if self.state != 'herochar_attack_anim_strip_4' or self.current_sprite > 4:
-            if self.change_x == 0 and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
-                self.state = 'herochar_idle_anim_strip_4'
-            else:
-                self.state = 'herochar_run_anim_strip_6'
-
-        if prev_state != self.state:
-            self.current_sprite = 0
+    def update(self):
+        self.get_input()
+        self.get_status()
+        self.animate()
+        self.countdown()

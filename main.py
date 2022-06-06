@@ -1,26 +1,69 @@
 import sys
 import pygame
-from player import Player
-from level import Level
 from settings import *
-from game_data import level_0
+from ui import UI
+from level import Level
+from overworld import Overworld
+from particles import ParticleEffect
 
-# inicjalizacja
+
+class Game:
+    def __init__(self):
+        # game data
+        self.max_level = 0
+
+        # overworld
+        self.overworld = Overworld(0, self.max_level, window, self.create_level)
+        self.status = 'overworld'
+
+        # UI
+        self.ui = UI(window)
+        self.current_health = 3
+        self.coins = 0
+        self.heart_loss_sprites = pygame.sprite.Group()
+
+    def create_level(self, current_level):
+        self.level = Level(current_level, window, self.create_overworld, self.change_coins, self.reduce_life, self.create_level)
+        self.current_health = 3
+        self.coins = 0
+        self.status = 'level'
+
+    def create_overworld(self, current_level, new_max_level):
+        if new_max_level > self.max_level:
+            self.max_level = new_max_level
+        self.overworld = Overworld(current_level, self.max_level, window, self.create_level)
+        self.status = 'overworld'
+
+    def change_coins(self, amount=1):
+        self.coins += amount
+
+    def reduce_life(self, amount=1):
+        if self.current_health > 0:
+            self.current_health -= amount
+            pos = (37+(self.current_health*70), 37)
+            heart_loss = ParticleEffect(pos, 'heart_loss')
+            self.heart_loss_sprites.add(heart_loss)
+        return self.current_health
+
+    def run(self):
+        if self.status == 'overworld':
+            self.overworld.run()
+        elif self.status == 'level':
+            self.level.run()
+            self.ui.show_heath(self.current_health)
+            self.ui.show_coins(self.coins)
+
+            self.heart_loss_sprites.update()
+            self.heart_loss_sprites.draw(window)
+
+
+# Game
 pygame.init()
 window = pygame.display.set_mode(screen_size)
 pygame.display.set_caption("Michal Platformowiec")
-
-# zegar
 clock = pygame.time.Clock()
 
-# deklaracja klas
-player = Player()
-level = Level(level_0, window)
-
-# sprites
-sprite_group = pygame.sprite.Group()
-sprite_group.add(player)
-#sprite_group.add(level)
+game = Game()
 
 # pętla gry
 while True:
@@ -29,37 +72,9 @@ while True:
             pygame.quit()
             sys.exit()
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP] is True:
-        player.jump()
-    if keys[pygame.K_DOWN] is True:
-        pass
-    if keys[pygame.K_LEFT] is True:
-        player.move_left()
-    if keys[pygame.K_RIGHT] is True:
-        player.move_right()
-    if keys[pygame.K_SPACE] is True:
-        player.attack()
-
-    # aktualizacja gracza
-    player.rect.left += player.change_x
-    player.rect.top += player.change_y
-
-    # hamowanie gracza
-    player.friction()
-    if not player.is_on_ground():
-        player.gravity()
-    else:
-        player.hit_ground()
-
-    # zmiana stanu, obrazu, rotacji
-    player.change_state(keys)
-    player.change_sprite()
-    player.change_direction()
-
     # rysowanie
-    window.fill('black')
-    sprite_group.draw(window)
+    window.fill('grey')
+    game.run()
 
-    pygame.display.flip()
+    pygame.display.update()
     clock.tick(60)
